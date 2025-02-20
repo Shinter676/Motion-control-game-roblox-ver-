@@ -2,20 +2,16 @@ import cv2
 import mediapipe as mp
 from pynput.keyboard import Controller, Key
 
-# ตั้งค่า MediaPipe Pose
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
 keyboard = Controller()
 
-# เปิดกล้อง
 cap = cv2.VideoCapture(1)
 
-# ตัวแปรสถานะ
 prev_hip_y = None  # ค่าตำแหน่งสะโพกจากเฟรมก่อนหน้า
 is_walking = False  # สถานะการเดิน
 current_turn = None  # สถานะหันซ้าย/ขวา
 
-# ค่ากำหนด
 walk_threshold = 0.05  # ความเร็วสะโพกที่ถือว่า "เดิน"
 box_width = 120  # ความกว้างของกล่องตรวจจับ
 box_height = 100  # ความสูงของกล่องตรวจจับ
@@ -34,7 +30,6 @@ while cap.isOpened():
     # กลับภาพจากกล้อง (Flip)
     flipped_frame = cv2.flip(frame, 1)  # 1 คือการกลับแนวนอน
 
-    # กำหนดตำแหน่งของกล่อง L และ R โดยขยับเข้าใกล้ศูนย์กลางมากขึ้น
     left_box = (box_x_offset, height - box_height - box_y_offset, box_x_offset + box_width, height - box_y_offset)
     right_box = (width - box_x_offset - box_width, height - box_height - box_y_offset, width - box_x_offset, height - box_y_offset)
 
@@ -47,9 +42,9 @@ while cap.isOpened():
         hip_y = (left_hip.y + right_hip.y) / 2  # ค่ากลางของสะโพก
 
         if prev_hip_y is not None:
-            speed = abs(hip_y - prev_hip_y) / (1 / 35)  # คิดว่า FPS = 35
+            speed = abs(hip_y - prev_hip_y) / (1 / 35) 
 
-            if speed > walk_threshold:  # เริ่มเดิน
+            if speed > walk_threshold: 
                 if not is_walking:
                     keyboard.press('w')
                     is_walking = True
@@ -79,7 +74,6 @@ while cap.isOpened():
             keyboard.release(Key.right)
             current_turn = None
 
-    # วาดกล่องตรวจจับ
     cv2.rectangle(flipped_frame, (left_box[0], left_box[1]), (left_box[2], left_box[3]), (0, 0, 255), 2)
     cv2.putText(flipped_frame, 'L', (left_box[0] + 10, left_box[1] + 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
     cv2.rectangle(flipped_frame, (right_box[0], right_box[1]), (right_box[2], right_box[3]), (255, 0, 0), 2)
